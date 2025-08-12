@@ -1,33 +1,37 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from './user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
-type User = CreateUserDto & { id: number };
 
 @Injectable()
 export class UserService {
-  private users: User[] = [];
-  create(createUserDto: CreateUserDto) {
-    const user = { id: Date.now(), ...createUserDto }
-    this.users.push(user)
-    return user
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+  ) { }
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const CreateUser = new this.userModel(createUserDto)
+    return CreateUser.save();
   }
 
-  findAll(): User[] {
-    return this.users;
+  async findAll(): Promise<User[]> {
+    return this.userModel.find().exec();
   }
-  update(id: number, UpdateUserDto: Partial<CreateUserDto>): User {
-    const index = this.users.findIndex(user => user.id === id)
-    if (index === -1) {
-      throw new NotFoundException(`User id not found id:${id}`)
+  async update(id: string, UpdateUserDto: Partial<CreateUserDto>): Promise<User> {
+    const user = await this.userModel.findByIdAndUpdate(id, UpdateUserDto, {
+      new: true,
+    })
+    if (!user) {
+      throw new NotFoundException(`User not Found fot Id:${id}`)
     }
-    this.users[index] = { ...this.users[index], ...UpdateUserDto }
-    return this.users[index]
+    return user
+
   }
-  delete(id: number): void {
-    const index = this.users.findIndex(user => user.id === id)
-    if (index === -1) {
-      throw new NotFoundException(`User not found for id:${id} or provide me correct id`)
+  async delete(id: string): Promise<void> {
+    const user = await this.userModel.findByIdAndDelete(id)
+    if (!user) {
+      throw new NotFoundException(`Wrong Id:${id}`)
     }
-    this.users.splice(index, 1)
   }
 }

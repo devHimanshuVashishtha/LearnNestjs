@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
+
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }
@@ -18,14 +19,14 @@ export class UserController {
   }
   @Put(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() UpdateUserDto: Partial<CreateUserDto>
   ) {
     return this.userService.update(id, UpdateUserDto)
   }
   @Delete(':id')
   remove(
-    @Param('id', ParseIntPipe) id: number) {
+    @Param('id') id: string) {
     this.userService.delete(id);
     return { message: `user :${id} is deleted` }
   }
