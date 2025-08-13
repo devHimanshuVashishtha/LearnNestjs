@@ -13,8 +13,12 @@ export class UserService {
   ) { }
   async login(dto: LoginUserDto): Promise<User> {
     const user = await this.userModel.findOne({ email: dto.email }).exec();
-    if (!user || user.password !== dto.password) {
-      throw new UnauthorizedException("invalid email or password");
+    if (!user) {
+      throw new UnauthorizedException("invalid email");
+    }
+    const checkPassword = await bcrypt.compare(dto.password, user.password)
+    if (!checkPassword) {
+      throw new UnauthorizedException('invalid password')
     }
     return user
   }
@@ -32,7 +36,6 @@ export class UserService {
       throw err;
     }
   }
-
   async findAll(): Promise<User[]> {
     return this.userModel.find().exec();
   }
