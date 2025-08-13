@@ -9,10 +9,10 @@ import { LoginUserDto } from './dto/login-user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
-  }
+  // @Post()
+  // create(@Body() createUserDto: CreateUserDto) {
+  //   return this.userService.create(createUserDto);
+  // }
   @Post('login')
   async login(@Body() dto: LoginUserDto) {
     const user = await this.userService.login(dto)
@@ -25,6 +25,10 @@ export class UserController {
         country: user.country
       }
     }
+  }
+  @Post('register')
+  async register(@Body() CreateUserDto: CreateUserDto){
+    return this.userService.create(CreateUserDto)
   }
 
   @Get()
