@@ -20,6 +20,9 @@ export class User {
 
     @Prop()
     country?: string;
+
+    @Prop()
+    profilepic?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
