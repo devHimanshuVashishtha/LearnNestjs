@@ -3,20 +3,13 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
 import { LoginUserDto } from './dto/login-user.dto';
-import { profile } from 'console';
-
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }
-
-  // @Post()
-  // create(@Body() createUserDto: CreateUserDto) {
-  //   return this.userService.create(createUserDto);
-  // }
   @Post('login')
   async login(@Body() dto: LoginUserDto) {
     const user = await this.userService.login(dto)
@@ -33,13 +26,7 @@ export class UserController {
   @Post('register')
   @UseInterceptors(
     FileInterceptor('profilepic', {
-      storage: diskStorage({
-        destination: './uploads/profilepic',
-        filename: (req, file, cb) => {
-          const uniSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9)
-          cb(null, file.filename + '-' + uniSuffix + extname(file.originalname))
-        }
-      }),
+      storage: memoryStorage(),
       limits: {
         fileSize: 1024 * 1024 * 2,
       },
@@ -56,10 +43,13 @@ export class UserController {
   )
   async register(@Body() CreateUserDto: CreateUserDto,
     @UploadedFile() file: Express.Multer.File) {
+    const base64image = file ? `data:${file.mimetype};base64,${file.buffer.toString('base64')}` : undefined
+
+
     const userData = {
-      ...CreateUserDto, profilepic: file?.filename || null
+      ...CreateUserDto, profilepic: base64image
     }
-    return this.userService.create(CreateUserDto)
+    return this.userService.create(userData)
   }
 
 

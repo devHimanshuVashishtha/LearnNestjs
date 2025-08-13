@@ -19,4 +19,6 @@ export class CreateUserDto {
     @IsString()
     country?: string;
 
+    profilepic?: string | null;
+
 }
