@@ -5,9 +5,10 @@ import { UserSchema, User } from './user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { MailModule } from 'src/mail/mail.module';
+import { SmsModule } from 'src/sms/sms.module';
 
 @Module({
-  imports: [MailModule,
+  imports: [SmsModule, MailModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'DEV_SECRET_CHANGE_ME',
       signOptions: { expiresIn: '1h' },

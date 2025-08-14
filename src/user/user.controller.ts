@@ -5,11 +5,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { LoginUserDto } from './dto/login-user.dto';
 import { MailService } from 'src/mail/mail.service';
+import { SmsService } from 'src/sms/sms.service';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService,
-    private readonly mailService: MailService
+    private readonly mailService: MailService,
+    private readonly smsService: SmsService,
   ) { }
   @Post('login')
   async login(@Body() dto: LoginUserDto) {
@@ -75,16 +77,18 @@ export class UserController {
 
   @Post('forget-password')
   async forgetpassword(
-    @Body('email') email: string) {
-    const resetToken = await this.userService.generateResetToken(email)
+    @Body() body: { email: string; phone: string }) {
+    const resetToken = await this.userService.generateResetToken(body.email)
     if (!resetToken) {
       throw new NotFoundException('token not generated')
     }
     await this.mailService.sendMail(
-      email,
+      body.email,
       'Password Reset',
       `Your password reset token is: ${resetToken}`,
     )
+    await this.smsService.smsSend(
+      body.phone, `Your password reset token is: ${resetToken}`);
     return {
       message: 'this token is valid for 10 min',
       resetToken

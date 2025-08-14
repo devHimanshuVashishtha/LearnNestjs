@@ -6,6 +6,9 @@ import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AuthMiddleware } from './user/middleware/auth.middleware';
 import { MailService } from './mail/mail.service';
 import { MailModule } from './mail/mail.module';
+import { SmsService } from './sms/sms.service';
+import { SmsController } from './sms/sms.controller';
+import { SmsModule } from './sms/sms.module';
 
 @Module({
   imports: [
@@ -58,8 +61,11 @@ import { MailModule } from './mail/mail.module';
     UserModule,
 
     MailModule,
+
+    SmsModule,
   ],
-  providers: [MailService],
+  providers: [MailService, SmsService],
+  controllers: [SmsController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

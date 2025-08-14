@@ -21,4 +21,8 @@ export class CreateUserDto {
 
     profilepic?: string | null;
 
+    @IsOptional()
+    @IsString()
+    phone?: string;
+
 }

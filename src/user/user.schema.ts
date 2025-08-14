@@ -23,6 +23,9 @@ export class User {
 
     @Prop()
     profilepic?: string;
+
+    @Prop()
+    phone?: string
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
