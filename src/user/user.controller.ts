@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { LoginUserDto } from './dto/login-user.dto';
+import { NotFoundError } from 'rxjs';
 
 @Controller('user')
 export class UserController {
@@ -68,5 +69,27 @@ export class UserController {
     @Param('id') id: string) {
     this.userService.delete(id);
     return { message: `user :${id} is deleted` }
+  }
+
+  @Post('forget-password')
+  async forgetpassword(
+    @Body('email') email: string) {
+    const resetToken = await this.userService.generateResetToken(email)
+    if (!resetToken) {
+      throw new NotFoundException('token not generated')
+    }
+    return {
+      message: 'this token is valid for 10 min',
+      resetToken
+    }
+  }
+
+  @Post('reset-password')
+  async resetPssword(@Body('token') token: string, @Body('newPassword') newPassword: string) {
+    const sucess = await this.userService.resetPassword(token, newPassword)
+    if (!sucess) {
+      throw new BadRequestException('Faild to update password or token expire')
+    }
+    return { message: 'Your Password updated successfully' }
   }
 }

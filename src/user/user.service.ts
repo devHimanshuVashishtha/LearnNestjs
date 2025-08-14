@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt'
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { promises } from 'dns';
 
 @Injectable()
 export class UserService {
@@ -60,5 +61,28 @@ export class UserService {
     if (!user) {
       throw new NotFoundException(`Wrong Id:${id}`)
     }
+  }
+  async generateResetToken(email: string): Promise<string | null> {
+    const user = await this.userModel.findOne({ email })
+    if (!user) {
+      throw new NotFoundException('Wrong email provided')
+    }
+    const payloads = { sub: user._id, email: user.email, pupose: 'reset' }
+    const token = this.jwtService.sign(payloads, { expiresIn: "10m" })
+    return token
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<boolean | null> {
+    const verifyToken = this.jwtService.verify(token)
+    if (verifyToken.pupose !== 'reset') {
+      throw new BadRequestException('Wrong Token Providede')
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    await this.userModel.updateOne({
+      _id: verifyToken.sub
+    }, {
+      $set: { password: hashedPassword }
+    })
+    return true
   }
 }
