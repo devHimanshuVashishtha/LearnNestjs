@@ -1,7 +1,9 @@
-import { Logger, Module } from '@nestjs/common';
+import { Logger, Module, RequestMethod } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
+import { MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { AuthMiddleware } from './user/middleware/auth.middleware';
 
 @Module({
   imports: [
@@ -54,4 +56,9 @@ import { UserModule } from './user/user.module';
     UserModule,
   ],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(AuthMiddleware)
+      .forRoutes({ path: 'user/profile', method: RequestMethod.GET });
+  }
+}

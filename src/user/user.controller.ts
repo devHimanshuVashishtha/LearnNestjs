@@ -1,10 +1,8 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, ParseIntPipe, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { extname } from 'path';
 import { LoginUserDto } from './dto/login-user.dto';
 
 @Controller('user')
@@ -12,9 +10,10 @@ export class UserController {
   constructor(private readonly userService: UserService) { }
   @Post('login')
   async login(@Body() dto: LoginUserDto) {
-    const user = await this.userService.login(dto)
+    const { access_token, user } = await this.userService.login(dto);
     return {
       message: 'Login Successfully',
+      access_token,
       user: {
         email: user.email,
         name: user.name,

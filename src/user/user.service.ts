@@ -5,13 +5,16 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt'
 import { LoginUserDto } from './dto/login-user.dto';
+import { JwtService } from '@nestjs/jwt';
+import { LoginResponseDto } from './dto/login-response.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private jwtService: JwtService,
   ) { }
-  async login(dto: LoginUserDto): Promise<User> {
+  async login(dto: LoginUserDto): Promise<LoginResponseDto> {
     const user = await this.userModel.findOne({ email: dto.email }).exec();
     if (!user) {
       throw new UnauthorizedException("invalid email");
@@ -20,7 +23,9 @@ export class UserService {
     if (!checkPassword) {
       throw new UnauthorizedException('invalid password')
     }
-    return user
+    const payloads = { sub: user._id, email: user.email }
+    const token = this.jwtService.sign(payloads)
+    return { access_token: token, user }
   }
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
@@ -32,7 +37,8 @@ export class UserService {
       const CreateUser = new this.userModel({ ...createUserDto, password: hashedPassword })
 
       return CreateUser.save();
-    } catch (err) {
+    }
+    catch (err) {
       throw err;
     }
   }
