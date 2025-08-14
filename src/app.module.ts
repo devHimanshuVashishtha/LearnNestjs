@@ -59,6 +59,10 @@ import { AuthMiddleware } from './user/middleware/auth.middleware';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthMiddleware)
-      .forRoutes({ path: 'user/profile', method: RequestMethod.GET });
+      .forRoutes(
+        // { path: 'user/profile', method: RequestMethod.GET }
+        { path: 'user/reset-password', method: RequestMethod.POST }
+
+      );
   }
 }

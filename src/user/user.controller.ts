@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { LoginUserDto } from './dto/login-user.dto';
-import { NotFoundError } from 'rxjs';
+
 
 @Controller('user')
 export class UserController {
@@ -85,10 +85,11 @@ export class UserController {
   }
 
   @Post('reset-password')
-  async resetPssword(@Body('token') token: string, @Body('newPassword') newPassword: string) {
-    const sucess = await this.userService.resetPassword(token, newPassword)
-    if (!sucess) {
-      throw new BadRequestException('Faild to update password or token expire')
+  async resetPassword(@Req() req, @Body('newPassword') newPassword: string) {
+    const userPayload = req['resetuser'];
+    const success = await this.userService.resetPassword(userPayload.sub, newPassword);
+    if (!success) {
+      throw new BadRequestException('Failed to update password or token expired');
     }
     return { message: 'Your Password updated successfully' }
   }

@@ -68,21 +68,15 @@ export class UserService {
       throw new NotFoundException('Wrong email provided')
     }
     const payloads = { sub: user._id, email: user.email, pupose: 'reset' }
-    const token = this.jwtService.sign(payloads, { expiresIn: "10m" })
+    const token = this.jwtService.sign(payloads, { expiresIn: "10m", secret: process.env.JWT_SECRET })
     return token
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<boolean | null> {
-    const verifyToken = this.jwtService.verify(token)
-    if (verifyToken.pupose !== 'reset') {
-      throw new BadRequestException('Wrong Token Providede')
-    }
-    const hashedPassword = await bcrypt.hash(newPassword, 10)
-    await this.userModel.updateOne({
-      _id: verifyToken.sub
-    }, {
-      $set: { password: hashedPassword }
-    })
-    return true
+  async resetPassword(userId: string, newPassword: string): Promise<boolean | null> {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    return true;
   }
 }
