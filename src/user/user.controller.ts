@@ -4,11 +4,13 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { LoginUserDto } from './dto/login-user.dto';
-
+import { MailService } from 'src/mail/mail.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService,
+    private readonly mailService: MailService
+  ) { }
   @Post('login')
   async login(@Body() dto: LoginUserDto) {
     const { access_token, user } = await this.userService.login(dto);
@@ -78,6 +80,11 @@ export class UserController {
     if (!resetToken) {
       throw new NotFoundException('token not generated')
     }
+    await this.mailService.sendMail(
+      email,
+      'Password Reset',
+      `Your password reset token is: ${resetToken}`,
+    )
     return {
       message: 'this token is valid for 10 min',
       resetToken

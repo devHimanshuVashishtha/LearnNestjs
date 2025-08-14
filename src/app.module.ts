@@ -4,6 +4,8 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AuthMiddleware } from './user/middleware/auth.middleware';
+import { MailService } from './mail/mail.service';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -54,7 +56,10 @@ import { AuthMiddleware } from './user/middleware/auth.middleware';
     }),
 
     UserModule,
+
+    MailModule,
   ],
+  providers: [MailService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
