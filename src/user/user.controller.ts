@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, NotFoundException, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, NotFoundException, UnauthorizedException, UseGuards, Res } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -7,6 +7,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { SmsService } from 'src/sms/sms.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import type { Response } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -15,18 +16,23 @@ export class UserController {
     private readonly smsService: SmsService,
   ) { }
   @Post('login')
-  async login(@Body() dto: LoginUserDto) {
+  async login(@Res() res: Response, @Body() dto: LoginUserDto) {
     const { access_token, user } = await this.userService.login(dto);
-    return {
-      message: 'Login Successfully',
+    res.cookie('jwt', access_token, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 60 * 60 * 1000,
+    });
+    res.send({
+      message: 'Login successful',
       access_token,
       user: {
         email: user.email,
         name: user.name,
         age: user.age,
-        country: user.country
-      }
-    }
+        country: user.country,
+      },
+    });
   }
   @Post('register')
   @UseInterceptors(
