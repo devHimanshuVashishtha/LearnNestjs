@@ -6,7 +6,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { MailModule } from 'src/mail/mail.module';
 import { SmsModule } from 'src/sms/sms.module';
-import { JwtStrategy } from 'src/auth/jwt.strategy';
 import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
