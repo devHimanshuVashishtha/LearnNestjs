@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Req, NotFoundException, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -6,6 +6,7 @@ import { memoryStorage } from 'multer';
 import { LoginUserDto } from './dto/login-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { SmsService } from 'src/sms/sms.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -47,20 +48,19 @@ export class UserController {
   )
   async register(@Body() CreateUserDto: CreateUserDto,
     @UploadedFile() file: Express.Multer.File) {
-    const base64image = file ? `data:${file.mimetype};base64,${file.buffer.toString('base64')}` : undefined
-
-
+    const base64image = file ? `data:${file.mimetype};base64,${file.buffer.toString('base64')}` : undefined;
     const userData = {
       ...CreateUserDto, profilepic: base64image
     }
     return this.userService.create(userData)
   }
 
-
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.userService.findAll();
   }
+
   @Put(':id')
   update(
     @Param('id') id: string,
@@ -68,6 +68,8 @@ export class UserController {
   ) {
     return this.userService.update(id, UpdateUserDto)
   }
+
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(
     @Param('id') id: string) {

@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt'
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginResponseDto } from './dto/login-response.dto';
-import { promises } from 'dns';
+
 
 @Injectable()
 export class UserService {

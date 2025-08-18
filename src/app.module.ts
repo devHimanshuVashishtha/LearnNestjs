@@ -5,10 +5,12 @@ import { UserModule } from './user/user.module';
 import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AuthMiddleware } from './user/middleware/auth.middleware';
 import { MailService } from './mail/mail.service';
+import { JwtStrategy } from './auth/jwt.strategy';
 import { MailModule } from './mail/mail.module';
 import { SmsService } from './sms/sms.service';
 import { SmsController } from './sms/sms.controller';
 import { SmsModule } from './sms/sms.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -63,6 +65,7 @@ import { SmsModule } from './sms/sms.module';
     MailModule,
 
     SmsModule,
+    AuthModule
   ],
   providers: [MailService, SmsService],
   controllers: [SmsController],
@@ -71,7 +74,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthMiddleware)
       .forRoutes(
-        // { path: 'user/profile', method: RequestMethod.GET }
         { path: 'user/reset-password', method: RequestMethod.POST }
 
       );
